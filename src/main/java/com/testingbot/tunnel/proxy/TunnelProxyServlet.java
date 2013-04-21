@@ -1,7 +1,7 @@
 package com.testingbot.tunnel.proxy;
 
 
-import org.eclipse.jetty.servlets.ProxyServlet;
+import org.eclipse.jetty.proxy.ProxyServlet;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -26,5 +26,5 @@ public class TunnelProxyServlet extends ProxyServlet {
         
         Logger.getLogger(TunnelProxyServlet.class.getName()).log(Level.INFO, "<< [{0}] {1} ({2})", new Object[]{request.getMethod(), request.getRequestURL().toString(), response.toString().substring(9, 12)});
         super.service(req, res);
-    } 
+    }
 }

@@ -20,7 +20,7 @@ import ssh.SSHTunnel;
 import ssh.TunnelPoller;
 
 public class App {
-    public static final double VERSION = 1.7;
+    public static final double VERSION = 1.8;
     private Api api;
     private String clientKey;
     private String clientSecret;
@@ -283,8 +283,8 @@ public class App {
     }
     
     private void startProxies() {
-       HttpProxy httpProxy = new HttpProxy(this);
        HttpForwarder httpForwarder = new HttpForwarder(this);
+       HttpProxy httpProxy = new HttpProxy(this);
        
        if (this.readyFile != null) {
            File f = new File(this.readyFile);
