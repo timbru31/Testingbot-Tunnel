@@ -1,6 +1,5 @@
 package com.testingbot.tunnel.proxy;
 
-
 import com.testingbot.tunnel.App;
 import java.net.URI;
 import java.net.URISyntaxException;

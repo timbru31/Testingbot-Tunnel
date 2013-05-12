@@ -7,18 +7,20 @@ import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 import com.testingbot.tunnel.proxy.ForwarderServlet;
+
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
+
 /**
  *
  * @author TestingBot
  */
 public class HttpForwarder {
+    private App app;
     
     public HttpForwarder(App app) {
         try {
@@ -51,10 +53,23 @@ public class HttpForwarder {
             server.setHandler(servletHandler);
             
             server.start();
-            server.join();
         } catch (Exception ex) {
             Logger.getLogger(HttpForwarder.class.getName()).log(Level.INFO, "Could not set up local forwarder. Please make sure this program can open port 4445 on this computer.");
             Logger.getLogger(HttpForwarder.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public boolean testForwarding() {
+        try {
+            HttpClient httpClient = new HttpClient();
+            httpClient.start();
+
+            ContentResponse response = httpClient
+            .GET("http://127.0.0.1:" + app.getSeleniumPort());
+            
+            return (response.getStatus() == 200);
+        } catch (Exception e) {
+            return false;
         }
     }
 }

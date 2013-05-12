@@ -20,7 +20,7 @@ import ssh.SSHTunnel;
 import ssh.TunnelPoller;
 
 public class App {
-    public static final double VERSION = 1.8;
+    public static final String VERSION = "1.10";
     private Api api;
     private String clientKey;
     private String clientSecret;
@@ -33,6 +33,8 @@ public class App {
     private Map<String, String> customHeaders = new HashMap<String, String>();
     private boolean useBrowserMob = false;
     private int hubPort = 4444;
+    private int tunnelID = 0;
+    private boolean useBoost = false;
     
     public static void main(String... args) throws Exception {
         
@@ -66,6 +68,7 @@ public class App {
         hubPort.setArgName("HUBPORT");
         options.addOption(hubPort);
         
+        options.addOption("b", "boost", false, "Will use rabbIT to compress and optimize traffic");
         options.addOption("s", "ssl", false, "Will use a browsermob-proxy to fix self-signed certificates");
         
         options.addOption("v", "version", false, "Displays the current version of this program");
@@ -130,6 +133,10 @@ public class App {
            
            if (commandLine.hasOption("ssl")) {
                app.useBrowserMob = true;
+           }
+           
+           if (commandLine.hasOption("boost")) {
+               app.useBoost = true;
            }
            
            if (commandLine.hasOption("readyfile")) {
@@ -218,6 +225,24 @@ public class App {
         
         Runtime.getRuntime().addShutdownHook(cleanupThread);
         
+        if (useBoost == true) {
+            File rabbitFile = new File(System.getProperty("user.dir") + "/lib/rabbit/jars/rabbit4.jar");
+            if (!rabbitFile.exists()) {
+                Logger.getLogger(App.class.getName()).log(Level.SEVERE, "Can not use rabbit, not found in {0}", rabbitFile.toString());
+            } else {
+                ProcessBuilder pb = new ProcessBuilder("java", "-jar", rabbitFile.toString());
+                pb.directory(new File(System.getProperty("user.dir") + "/lib/rabbit/"));
+                pb.start();
+                Process proc = Runtime.getRuntime().exec("java -jar " + rabbitFile.toString());
+                System.getProperties().put("http.proxySet", "true");
+                System.setProperty("http.proxyHost", "127.0.0.1");
+                System.setProperty("https.proxyHost", "127.0.0.1");
+                System.setProperty("http.proxyPort", "9666");
+                System.setProperty("https.proxyPort", "9666");
+                System.getProperties().put("http.nonProxyHosts", "localhost|127.0.0.1|testingbot.com|api.testingbot.com|hub.testingbot.com|europe.testingbot.com|api-eu.testingbot.com");
+            }
+        }
+        
         api = new Api(this);
         JSONObject tunnelData = api.createTunnel();
         
@@ -227,10 +252,11 @@ public class App {
         }
         
         if (tunnelData.has("id")) {
-            api.setTunnelID(Integer.parseInt(tunnelData.getString("id")));
+            this.tunnelID = Integer.parseInt(tunnelData.getString("id"));
+            api.setTunnelID(tunnelID);
         }
         
-        if (Double.parseDouble(tunnelData.getString("version")) > App.VERSION) {
+        if (!tunnelData.getString("version").equals(App.VERSION)) {
             System.err.println("A new version (" + tunnelData.getString("version") + ") is available for download at http://testingbot.com\nYou have version " + App.VERSION);
         }
         
@@ -244,7 +270,7 @@ public class App {
 
     public void stop() {
       if (tunnel != null) {
-         tunnel.stop();
+         tunnel.stop(true);
       }
 
       try {
@@ -258,10 +284,10 @@ public class App {
     public void tunnelReady(JSONObject apiResponse) {
         // server is booted, make the connection
         try {
-            String serverIP = apiResponse.getString("ip");
-            tunnel = new SSHTunnel(this, serverIP);
+            String _serverIP = apiResponse.getString("ip");
+            tunnel = new SSHTunnel(this, _serverIP);
             if (tunnel.isAuthenticated() == true) {
-                this.serverIP = serverIP;
+                this.serverIP = _serverIP;
                 Logger.getLogger(App.class.getName()).log(Level.INFO, "Successfully authenticated, setting up forwarding.");
                 tunnel.createPortForwarding();
                 this.startProxies();
@@ -273,7 +299,7 @@ public class App {
                     }
                     api.setupBrowserMob(apiResponse);
                 }
-                Logger.getLogger(App.class.getName()).log(Level.INFO, "The Tunnel is ready, ip: {0}\nYou may start your tests.", serverIP);
+                Logger.getLogger(App.class.getName()).log(Level.INFO, "The Tunnel is ready, ip: {0}\nYou may start your tests.", _serverIP);
                 this.saveUserData();
             }
         } catch (Exception ex) {
@@ -286,6 +312,14 @@ public class App {
        HttpForwarder httpForwarder = new HttpForwarder(this);
        HttpProxy httpProxy = new HttpProxy(this);
        
+       if (httpForwarder.testForwarding() == false) {
+           Logger.getLogger(App.class.getName()).log(Level.SEVERE, "!! Forwarder testing failed, localhost port {0} does not seem to be able to reach our hub (hub.testingbot.com)", getSeleniumPort());
+       }
+       
+       if (httpProxy.testProxy() == false) {
+           Logger.getLogger(App.class.getName()).log(Level.SEVERE, "!! Tunnel might not work properly, test failed");
+       }
+       
        if (this.readyFile != null) {
            File f = new File(this.readyFile);
            if (f.exists()) {
@@ -297,7 +331,23 @@ public class App {
                     Logger.getLogger(App.class.getName()).log(Level.SEVERE, null, ex);
                 }
            }
+           
+           Thread cleanupThread = new Thread() {
+              @Override
+              public void run() {
+                  File f = new File(readyFile);
+                  if (f.exists()) {
+                        f.delete();
+                  }
+              }
+            };
+
+            Runtime.getRuntime().addShutdownHook(cleanupThread);
        }
+    }
+    
+    public int getTunnelID() {
+        return tunnelID;
     }
     
     public String getRegion() {
@@ -343,6 +393,10 @@ public class App {
     
     public void addCustomHeader(String key, String value) {
         customHeaders.put(key, value);
+    }
+    
+    public boolean getUseBoost() {
+        return useBoost;
     }
 
    /**
