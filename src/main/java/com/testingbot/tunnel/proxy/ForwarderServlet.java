@@ -34,17 +34,15 @@ public class ForwarderServlet extends ProxyServlet {
         }
     }
     
-    @Override
-    protected URI rewriteURI(HttpServletRequest request) {
-        if (!validateDestination(request.getServerName(), request.getServerPort()))
+     @Override
+    protected URI rewriteURI(HttpServletRequest request)
+    {
+        String path = request.getRequestURI();
+        URI rewrittenURI = URI.create(URI.create("http://127.0.0.1:4446/").normalize().toString() + path.substring("/".length())).normalize();
+Logger.getLogger(ForwarderServlet.class.getName()).log(Level.INFO, rewrittenURI.toString());
+        if (!validateDestination(rewrittenURI.getHost(), rewrittenURI.getPort()))
             return null;
 
-        StringBuffer uri = request.getRequestURL();
-        try {
-            return new URI(request.getScheme(), "", "127.0.0.1", 4444, uri.toString(), request.getQueryString(), "");
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(ForwarderServlet.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        return rewrittenURI;
     }
 }
