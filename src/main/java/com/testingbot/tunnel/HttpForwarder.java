@@ -24,6 +24,7 @@ public class HttpForwarder {
     
     public HttpForwarder(App app) {
         try {
+            this.app = app;
             Server server = new Server();
             HttpConfiguration http_config = new HttpConfiguration();
             http_config.setSecureScheme("https");

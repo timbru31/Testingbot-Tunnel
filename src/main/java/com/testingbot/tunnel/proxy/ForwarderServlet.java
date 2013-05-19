@@ -2,7 +2,6 @@ package com.testingbot.tunnel.proxy;
 
 import com.testingbot.tunnel.App;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.jetty.proxy.ProxyServlet;
@@ -39,7 +38,7 @@ public class ForwarderServlet extends ProxyServlet {
     {
         String path = request.getRequestURI();
         URI rewrittenURI = URI.create(URI.create("http://127.0.0.1:4446/").normalize().toString() + path.substring("/".length())).normalize();
-Logger.getLogger(ForwarderServlet.class.getName()).log(Level.INFO, rewrittenURI.toString());
+        Logger.getLogger(ForwarderServlet.class.getName()).log(Level.INFO, " >> [{0}] {1}", new Object[]{request.getMethod(), request.getRequestURL()});
         if (!validateDestination(rewrittenURI.getHost(), rewrittenURI.getPort()))
             return null;
 

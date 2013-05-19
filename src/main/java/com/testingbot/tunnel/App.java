@@ -316,7 +316,6 @@ public class App {
     
     private void startProxies() {
        HttpForwarder httpForwarder = new HttpForwarder(this);
-       HttpProxy httpProxy = new HttpProxy(this);
        
        if (httpForwarder.testForwarding() == false) {
            Logger.getLogger(App.class.getName()).log(Level.SEVERE, "!! Forwarder testing failed, localhost port {0} does not seem to be able to reach our hub (hub.testingbot.com)", getSeleniumPort());
