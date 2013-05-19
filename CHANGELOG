@@ -1,3 +1,12 @@
+1.11
+* ssh compression (zlib)
+
+1.10
+* switch to using blowfish tunnel encryption which should be faster
+* improved error logging
+* display how long each proxied request takes in ms
+* add rabbIT support
+
 1.9
 * remove readyfile when tunnel is stopped
 * cleanup code
