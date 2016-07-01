@@ -23,7 +23,7 @@
 
   <name>TestingBotTunnel</name>
   <description>Tunnel to run TestingBot Selenium tests on your local machine</description>
-  <url>http://testingbot.com</url>
+  <url>https://testingbot.com</url>
   <scm>
     <connection>scm:git:git@github.com:testingbot/Testingbot-Tunnel.git</connection>
     <developerConnection>scm:git:git@github.com:testingbot/Testingbot-Tunnel.git</developerConnection>
@@ -38,6 +38,15 @@
   </distributionManagement>
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.5.1</version>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
