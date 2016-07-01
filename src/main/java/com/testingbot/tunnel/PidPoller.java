@@ -23,6 +23,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import ssh.TunnelPoller;
 
 /**
@@ -33,10 +34,10 @@ public class PidPoller {
     private App app;
     private File pidFile;
     private Timer timer;
-    
+
     public PidPoller(App app) {
         this.app = app;
-        
+
         // create a "pid" file which we'll watch, when deleted, shutdown the tunnel
         final String fileName = "testingbot-tunnel.pid";
         pidFile = new File(fileName);
@@ -52,24 +53,25 @@ public class PidPoller {
                 return;
             }
         }
-        
+
         Thread cleanupThread = new Thread() {
-          @Override
-          public void run() {
-              File f = new File(fileName);
-              if (f.exists()) {
+            @Override
+            public void run() {
+                File f = new File(fileName);
+                if (f.exists()) {
                     f.delete();
-              }
-          }
+                }
+            }
         };
 
         Runtime.getRuntime().addShutdownHook(cleanupThread);
-        
+
         timer = new Timer();
         timer.schedule(new PollTask(), 5000, 5000);
     }
-    
+
     class PollTask extends TimerTask {
+        @Override
         public void run() {
             if (!pidFile.exists()) {
                 Logger.getLogger(TunnelPoller.class.getName()).log(Level.INFO, "{0} pidFile was removed, shutting down Tunnel", pidFile.toString());

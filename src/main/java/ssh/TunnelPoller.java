@@ -1,11 +1,13 @@
 package ssh;
 
-import com.testingbot.tunnel.Api;
-import com.testingbot.tunnel.App;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.testingbot.tunnel.Api;
+import com.testingbot.tunnel.App;
+
 import net.sf.json.JSONObject;
 
 /**
@@ -16,24 +18,25 @@ public class TunnelPoller {
     private App app;
     private Timer timer;
     private String tunnelID;
-    
+
     public TunnelPoller(App app, String tunnelID) {
         this.app = app;
         this.tunnelID = tunnelID;
         timer = new Timer();
         timer.schedule(new PollTask(), 5000, 5000);
     }
-    
+
     class PollTask extends TimerTask {
+        @Override
         public void run() {
             Api api = app.getApi();
             JSONObject response;
             try {
                 response = api.pollTunnel(tunnelID);
-            
+
                 if (response.getString("state").equals("READY")) {
-                   timer.cancel();
-                   app.tunnelReady(response);
+                    timer.cancel();
+                    app.tunnelReady(response);
                 } else {
                     Logger.getLogger(TunnelPoller.class.getName()).log(Level.INFO, "Current tunnel status: {0}", response.getString("state"));
                 }
