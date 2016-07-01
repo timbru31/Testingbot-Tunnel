@@ -259,7 +259,7 @@ public class App {
 
         Runtime.getRuntime().addShutdownHook(cleanupThread);
 
-        if (useBoost == true) {
+        if (useBoost) {
             File rabbitFile = new File(System.getProperty("user.dir") + "/lib/rabbit/jars/rabbit4.jar");
             if (!rabbitFile.exists()) {
                 Logger.getLogger(App.class.getName()).log(Level.SEVERE, "Can not use rabbit, not found in {0}", rabbitFile.toString());
@@ -328,12 +328,12 @@ public class App {
         try {
             String _serverIP = apiResponse.getString("ip");
             tunnel = new SSHTunnel(this, _serverIP);
-            if (tunnel.isAuthenticated() == true) {
+            if (tunnel.isAuthenticated()) {
                 this.serverIP = _serverIP;
                 Logger.getLogger(App.class.getName()).log(Level.INFO, "Successfully authenticated, setting up forwarding.");
                 tunnel.createPortForwarding();
                 this.startProxies();
-                if (useBrowserMob == true) {
+                if (useBrowserMob) {
                     try {
                         Thread.sleep(10000);
                     } catch (InterruptedException ex) {

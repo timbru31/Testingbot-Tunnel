@@ -25,7 +25,7 @@ public class CustomConnectionMonitor implements ConnectionMonitor {
 
     @Override
     public void connectionLost(Throwable reason) {
-        if (tunnel.isShuttingDown() == true) {
+        if (tunnel.isShuttingDown()) {
             return;
         }
 

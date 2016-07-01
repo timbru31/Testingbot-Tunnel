@@ -71,7 +71,7 @@ public class HttpProxy {
             proxyServlet.setInitParameter("blackList", sb.toString());
         }
 
-        if (app.getUseBoost() == true) {
+        if (app.getUseBoost()) {
             proxyServlet.setInitParameter("proxy", "127.0.0.1:9666");
         }
 
