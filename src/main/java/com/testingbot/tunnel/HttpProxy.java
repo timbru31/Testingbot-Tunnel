@@ -17,7 +17,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -155,8 +156,7 @@ public class HttpProxy {
             return true;
         }
 
-        try {
-            DefaultHttpClient httpClient = new DefaultHttpClient();
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
             String url = "https://api.testingbot.com/v1/tunnel/test";
             HttpPost postRequest = new HttpPost(url);
 

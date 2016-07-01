@@ -8,12 +8,13 @@ import java.util.logging.Logger;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 import net.iharder.Base64;
 import net.sf.json.JSONException;
@@ -60,9 +61,8 @@ public class Api {
     }
 
     public void setupBrowserMob(JSONObject apiResponse) {
-        DefaultHttpClient httpClient = new DefaultHttpClient();
         HttpPost postRequest = new HttpPost("http://" + apiResponse.getString("ip") + ":9090/proxy?httpProxy=" + apiResponse.getString("private_ip") + ":2009");
-        try {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
             HttpResponse response = httpClient.execute(postRequest);
             BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent()), "UTF8"));
 
@@ -75,7 +75,7 @@ public class Api {
             try {
                 String jsonData = sb.toString().replaceAll("\\\\", "");
                 if (!jsonData.startsWith("{")) {
-                    jsonData = jsonData.substring(1, (jsonData.toString().length() - 1));
+                    jsonData = jsonData.substring(1, (jsonData.length() - 1));
                 }
 
                 JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON(jsonData);
@@ -89,24 +89,25 @@ public class Api {
     }
 
     public void destroyTunnel() throws Exception {
-        DefaultHttpClient httpClient = new DefaultHttpClient();
-        HttpParams params = httpClient.getParams();
-        HttpConnectionParams.setConnectionTimeout(params, 1000);
-        HttpConnectionParams.setSoTimeout(params, 1000);
-        String auth = this.clientKey + ":" + this.clientSecret;
-        String encoding = Base64.encodeBytes(auth.getBytes("UTF-8"));
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
+            Builder requestConfigBuilder = RequestConfig.custom();
+            requestConfigBuilder.setConnectTimeout(1000).setSocketTimeout(1000);
+            String auth = this.clientKey + ":" + this.clientSecret;
+            String encoding = Base64.encodeBytes(auth.getBytes("UTF-8"));
 
-        HttpDelete deleteRequest = new HttpDelete("https://" + apiHost + "/v1/tunnel/" + this.tunnelID);
-        deleteRequest.addHeader("accept", "application/json");
-        deleteRequest.setHeader("Authorization", "Basic " + encoding);
+            HttpDelete deleteRequest = new HttpDelete("https://" + apiHost + "/v1/tunnel/" + this.tunnelID);
+            deleteRequest.addHeader("accept", "application/json");
+            deleteRequest.setHeader("Authorization", "Basic " + encoding);
+            deleteRequest.setConfig(requestConfigBuilder.build());
 
-        HttpResponse response = httpClient.execute(deleteRequest);
-        httpClient.getConnectionManager().shutdown();
+            httpClient.execute(deleteRequest);
+        } catch (IOException ex) {
+            Logger.getLogger(Api.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private JSONObject _get(String url) throws Exception {
-        try {
-            DefaultHttpClient httpClient = new DefaultHttpClient();
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
             String auth = this.clientKey + ":" + this.clientSecret;
             String encoding = Base64.encodeBytes(auth.getBytes("UTF-8"));
 
@@ -127,8 +128,6 @@ public class Api {
             while ((output = br.readLine()) != null) {
                 sb.append(output);
             }
-
-            httpClient.getConnectionManager().shutdown();
 
             try {
                 String jsonData = sb.toString().replaceAll("\\\\", "");

@@ -6,7 +6,8 @@ import java.util.logging.Logger;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -50,11 +51,10 @@ public class HttpForwarder {
     }
 
     public boolean testForwarding() {
-        DefaultHttpClient httpClient = new DefaultHttpClient();
         HttpGet getRequest = new HttpGet("http://127.0.0.1:" + app.getSeleniumPort());
 
         HttpResponse response;
-        try {
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
             response = httpClient.execute(getRequest);
         } catch (IOException ex) {
             return false;

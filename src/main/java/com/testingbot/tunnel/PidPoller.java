@@ -31,13 +31,10 @@ import ssh.TunnelPoller;
  * @author testingbot
  */
 public class PidPoller {
-    private App app;
     private File pidFile;
     private Timer timer;
 
-    public PidPoller(App app) {
-        this.app = app;
-
+    public PidPoller() {
         // create a "pid" file which we'll watch, when deleted, shutdown the tunnel
         final String fileName = "testingbot-tunnel.pid";
         pidFile = new File(fileName);

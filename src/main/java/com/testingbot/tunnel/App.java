@@ -17,11 +17,11 @@ import java.util.logging.Logger;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 
 import net.sf.json.JSONObject;
 import ssh.SSHTunnel;
@@ -51,7 +51,7 @@ public class App {
 
     public static void main(String... args) throws Exception {
 
-        final CommandLineParser cmdLinePosixParser = new PosixParser();
+        final CommandLineParser cmdLinePosixParser = new DefaultParser();
         final Options options = new Options();
 
         options.addOption("h", "help", false, "Displays help text");
@@ -267,7 +267,7 @@ public class App {
                 ProcessBuilder pb = new ProcessBuilder("java", "-jar", rabbitFile.toString());
                 pb.directory(new File(System.getProperty("user.dir") + "/lib/rabbit/"));
                 pb.start();
-                Process proc = Runtime.getRuntime().exec("java -jar " + rabbitFile.toString());
+                Runtime.getRuntime().exec("java -jar " + rabbitFile.toString());
                 System.getProperties().put("http.proxySet", "true");
                 System.setProperty("http.proxyHost", "127.0.0.1");
                 System.setProperty("https.proxyHost", "127.0.0.1");
@@ -302,12 +302,12 @@ public class App {
         } else {
             Logger.getLogger(App.class.getName()).log(Level.INFO,
                     "Please wait while your personal Tunnel Server is being setup. Shouldn't take more than a minute.\nWhen the tunnel is ready you will see a message \"You may start your tests.\"");
-            TunnelPoller poller = new TunnelPoller(this, tunnelData.getString("id"));
+            new TunnelPoller(this, tunnelData.getString("id"));
         }
     }
 
     public void trackPid() {
-        PidPoller pidPoller = new PidPoller(this);
+        new PidPoller();
     }
 
     public void stop() {

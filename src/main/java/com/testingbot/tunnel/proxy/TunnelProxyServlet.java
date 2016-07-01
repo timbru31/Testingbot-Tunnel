@@ -94,8 +94,6 @@ public class TunnelProxyServlet extends ProxyServlet {
                     uri += "?" + request.getQueryString();
                 }
 
-                Integer proxy = Integer.valueOf(getServletConfig().getInitParameter("jetty"));
-
                 if (request.getServerName().equalsIgnoreCase("localhost") && request.getServerPort() == 8087) {
                     throw new ServletException("Bad request on TunnelProxyServlet");
                 }
@@ -143,7 +141,7 @@ public class TunnelProxyServlet extends ProxyServlet {
                         }
 
                         if (reason != null && reason.length() > 0) {
-                            response.setStatus(status, reason.toString());
+                            response.sendError(status, reason.toString());
                         } else {
                             response.setStatus(status);
                         }
