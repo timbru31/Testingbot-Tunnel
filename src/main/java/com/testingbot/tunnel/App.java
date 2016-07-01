@@ -38,14 +38,14 @@ public class App {
     private SSHTunnel tunnel;
     private String serverIP;
     private Map<String, String> customHeaders = new HashMap<>();
-    private boolean useBrowserMob = false;
+    private boolean useBrowserMob;
     private int hubPort = 4444;
     private String hubHost = "hub.testingbot.com";
-    private int tunnelID = 0;
+    private int tunnelID;
     private int jettyPort = 8087;
-    private boolean useBoost = false;
-    private boolean noProxy = false;
-    private boolean bypassSquid = false;
+    private boolean useBoost;
+    private boolean noProxy;
+    private boolean bypassSquid;
     private HttpProxy httpProxy;
     private String proxy;
 
@@ -300,8 +300,7 @@ public class App {
         if (tunnelData.getString("state").equals("READY")) {
             this.tunnelReady(tunnelData);
         } else {
-            Logger.getLogger(App.class.getName()).log(Level.INFO,
-                    "Please wait while your personal Tunnel Server is being setup. Shouldn't take more than a minute.\nWhen the tunnel is ready you will see a message \"You may start your tests.\"");
+            Logger.getLogger(App.class.getName()).log(Level.INFO, "Please wait while your personal Tunnel Server is being setup. Shouldn't take more than a minute.\nWhen the tunnel is ready you will see a message \"You may start your tests.\"");
             new TunnelPoller(this, tunnelData.getString("id"));
         }
     }
@@ -355,14 +354,13 @@ public class App {
     private void startProxies() {
         HttpForwarder httpForwarder = new HttpForwarder(this);
 
-        if (httpForwarder.testForwarding() == false) {
-            Logger.getLogger(App.class.getName()).log(Level.SEVERE, "!! Forwarder testing failed, localhost port {0} does not seem to be able to reach our hub (hub.testingbot.com)",
-                    getSeleniumPort());
+        if (!httpForwarder.testForwarding()) {
+            Logger.getLogger(App.class.getName()).log(Level.SEVERE, "!! Forwarder testing failed, localhost port {0} does not seem to be able to reach our hub (hub.testingbot.com)", getSeleniumPort());
         }
 
         if (!this.noProxy) {
             this.httpProxy = new HttpProxy(this);
-            if (!this.getUseBoost() && this.httpProxy.testProxy() == false) {
+            if (!this.getUseBoost() && !this.httpProxy.testProxy()) {
                 Logger.getLogger(App.class.getName()).log(Level.SEVERE, "!! Tunnel might not work properly, test failed");
             }
         }

@@ -19,8 +19,8 @@ public class SSHTunnel {
     private Connection conn;
     private String server;
     private Timer timer;
-    private boolean authenticated = false;
-    private boolean shuttingDown = false;
+    private boolean authenticated;
+    private boolean shuttingDown;
 
     public SSHTunnel(App app, String server) throws Exception {
         /* Create a connection instance */
@@ -50,7 +50,7 @@ public class SSHTunnel {
             throw new Exception("Authentication failed: " + ex.getMessage());
         }
 
-        if (this.authenticated == false) {
+        if (!this.authenticated) {
             Logger.getLogger(SSHTunnel.class.getName()).log(Level.SEVERE, "Failed authenticating to the tunnel. Please make sure you are supplying correct login credentials.");
             throw new Exception("Authentication failed");
         }
